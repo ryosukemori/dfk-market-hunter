@@ -2,6 +2,8 @@ import { getProvider } from '../../wallet'
 import { ethers } from 'ethers'
 
 const contractAddress = '0x13a65b9f8039e2c032bc022171dc05b30c3f2892'
+const gasBoost = Number(process.env.GAS_BOOST) || 5
+const gasLimit = Number(process.env.GAS_LIMIT) || 500000
 
 const abi = [
   {
@@ -60,11 +62,12 @@ export const bid = async (
   bidAmount: number | ethers.BigNumber,
 ) => {
   const callContract = new ethers.Contract(contractAddress, abi, signer)
-  const gasPrice = (await signer.getGasPrice()).mul(10)
+  const gasPrice = (await signer.getGasPrice()).mul(gasBoost)
   console.log(ethers.utils.formatUnits(gasPrice, 'gwei'))
   try {
     const tx = await callContract.bid(tokenId, bidAmount, {
       gasPrice,
+      gasLimit,
     })
     tx.wait()
     return tx
