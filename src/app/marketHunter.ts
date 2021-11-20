@@ -44,6 +44,7 @@ const main = async () => {
     if (heroId <= gen0 && price <= bidPriceGen0) {
       const tx = await bid(wallet, tokenId, startingPrice)
       if (tx === false) {
+        log(`'購入失敗 ID:${heroId}, ${price} Jewel`)
         console.log('購入失敗 :', tokenId, price)
         return
       }
@@ -64,6 +65,7 @@ const main = async () => {
       const tx = await bid(wallet, tokenId, startingPrice)
       if (tx === false) {
         console.log('購入失敗 :', tokenId, price)
+        log(`'購入失敗 ID:${heroId}, ${price} Jewel`)
         return
       }
       console.log(`'購入成功 ID:${heroId}, ${price} Jewel`)
