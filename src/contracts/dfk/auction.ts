@@ -1,0 +1,87 @@
+import { getProvider } from '../../wallet'
+import { ethers } from 'ethers'
+
+const contractAddress = '0x13a65b9f8039e2c032bc022171dc05b30c3f2892'
+
+const abi = [
+  {
+    inputs: [
+      { internalType: 'uint256', name: '_tokenId', type: 'uint256' },
+      { internalType: 'uint128', name: '_startingPrice', type: 'uint128' },
+      { internalType: 'uint128', name: '_endingPrice', type: 'uint128' },
+      { internalType: 'uint64', name: '_duration', type: 'uint64' },
+      { internalType: 'address', name: '_winner', type: 'address' },
+    ],
+    name: 'createAuction',
+    outputs: [],
+    stateMutability: 'nonpayable',
+    type: 'function',
+  },
+  {
+    anonymous: false,
+    inputs: [
+      { indexed: false, internalType: 'uint256', name: 'auctionId', type: 'uint256' },
+      { indexed: true, internalType: 'uint256', name: 'tokenId', type: 'uint256' },
+    ],
+    name: 'AuctionCancelled',
+    type: 'event',
+  },
+  {
+    anonymous: false,
+    inputs: [
+      { indexed: false, internalType: 'uint256', name: 'auctionId', type: 'uint256' },
+      { indexed: true, internalType: 'address', name: 'owner', type: 'address' },
+      { indexed: true, internalType: 'uint256', name: 'tokenId', type: 'uint256' },
+      { indexed: false, internalType: 'uint256', name: 'startingPrice', type: 'uint256' },
+      { indexed: false, internalType: 'uint256', name: 'endingPrice', type: 'uint256' },
+      { indexed: false, internalType: 'uint256', name: 'duration', type: 'uint256' },
+      { indexed: false, internalType: 'address', name: 'winner', type: 'address' },
+    ],
+    name: 'AuctionCreated',
+    type: 'event',
+  },
+  {
+    inputs: [
+      { internalType: 'uint256', name: '_tokenId', type: 'uint256' },
+      { internalType: 'uint256', name: '_bidAmount', type: 'uint256' },
+    ],
+    name: 'bid',
+    outputs: [],
+    stateMutability: 'nonpayable',
+    type: 'function',
+  },
+]
+
+const contract = new ethers.Contract(contractAddress, abi, getProvider())
+
+export const bid = async (
+  signer: ethers.Signer,
+  tokenId: number | ethers.BigNumber,
+  bidAmount: number | ethers.BigNumber,
+) => {
+  const callContract = new ethers.Contract(contractAddress, abi, signer)
+  const gasPrice = (await signer.getGasPrice()).mul(10)
+  console.log(ethers.utils.formatUnits(gasPrice, 'gwei'))
+  try {
+    const tx = await callContract.bid(tokenId, bidAmount, {
+      gasPrice,
+    })
+    tx.wait()
+    return tx
+  } catch (e) {
+    console.error(e)
+    return false
+  }
+}
+
+export const eventAuctionCreated = (
+  handler: (
+    auctionId: ethers.BigNumber,
+    owner: string,
+    tokenId: ethers.BigNumber,
+    startingPrice: ethers.BigNumber,
+  ) => void,
+) => {
+  const filter = contract.filters.AuctionCreated()
+  contract.on(filter, handler)
+}
