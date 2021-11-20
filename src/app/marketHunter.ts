@@ -71,7 +71,7 @@ const main = async () => {
 }
 
 const log = (text: string) => {
-  fs.writeFile(`${path.join(path.resolve(), '/bid.log')}`, text, () => {})
+  fs.appendFile(`${path.join(path.resolve(), '/bid.log')}`, text, () => {})
 }
 
 export default main
