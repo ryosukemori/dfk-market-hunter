@@ -43,7 +43,7 @@ const main = async () => {
     // low cost gen0
     if (heroId <= gen0 && price <= bidPriceGen0) {
       const tx = await bid(wallet, tokenId, startingPrice)
-      if (tx === false) console.log('購入失敗 :', tokenId, startingPrice)
+      if (tx === false) console.log('購入失敗 :', tokenId, price)
       console.log('購入成功 : ', heroId, startingPrice)
       log(`'購入成功 ID:${heroId}, ${startingPrice} Jewel`)
       return
@@ -59,7 +59,8 @@ const main = async () => {
       console.log(`gen: ${hero.generation} 購入価格閾値: ${bidPrice || 'なし'}`)
       console.log('購入開始')
       const tx = await bid(wallet, tokenId, startingPrice)
-      if (tx === false) console.log('購入失敗 :', tokenId, startingPrice)
+      if (tx === false) console.log('購入失敗 :', tokenId, price)
+      console.log(`'購入成功 ID:${heroId}, ${startingPrice} Jewel`)
       log(`'購入成功 ID:${heroId}, ${startingPrice} Jewel`)
       return
     }
