@@ -30,7 +30,10 @@ const main = async () => {
     console.log('continue get balance')
     return
   }
-
+  // setting
+  console.log('provider', process.env.PROVIDER)
+  console.log('GAS_BOOST', process.env.GAS_BOOST)
+  console.log('GAS_LIMIT', process.env.GAS_LIMIT)
   // balance
   console.log('one ', ethers.utils.formatEther(balance))
   console.log('jewel ', ethers.utils.formatUnits(jewel.balance, jewel.decimals))
