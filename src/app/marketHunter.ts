@@ -9,14 +9,10 @@ import { getHero } from '../contracts/dfk/hero'
 const auction = '0x13a65b9f8039e2c032bc022171dc05b30c3f2892'
 const gen0 = 2071
 const bidPriceGen0 = Number(process.env.bidPriceGen0) || 200
-const bidPrices = [
-  Number(process.env.bidPriceGen1) || 10,
-  Number(process.env.bidPriceGen2) || 10,
-  Number(process.env.bidPriceGen3) || 10,
-  Number(process.env.bidPriceGen4) || 10,
-  Number(process.env.bidPriceGen5) || 10,
-  Number(process.env.bidPriceGen6) || 10,
-]
+const bidPrice = Number(process.env.bidPrice) || 15
+const gasBoost = process.env.GAS_BOOST || 10
+
+let gasPrice = ethers.BigNumber.from(0)
 
 const main = async () => {
   const wallet = getWallet()
@@ -38,44 +34,29 @@ const main = async () => {
   console.log('one ', ethers.utils.formatEther(balance))
   console.log('jewel ', ethers.utils.formatUnits(jewel.balance, jewel.decimals))
 
+  gasPrice = await (await wallet.getGasPrice()).mul(gasBoost)
+  console.log('set gas:', ethers.utils.formatUnits(gasPrice, 'gwei'))
+
+  setInterval(async () => {
+    gasPrice = await (await wallet.getGasPrice()).mul(gasBoost)
+    console.log('set gas:', ethers.utils.formatUnits(gasPrice, 'gwei'))
+  }, 60000)
+
   eventAuctionCreated(async (_auctionId, _owner, tokenId, startingPrice) => {
     try {
-      const heroId = Number(ethers.utils.formatUnits(tokenId, 0))
+      // low Price
       const price = Number(ethers.utils.formatUnits(startingPrice, jewel.decimals))
-      console.log(`ヒーローID:${heroId} 販売価格:${price}`)
-      log(`ヒーローID:${heroId} 販売価格:${price}`)
-      // low cost gen0
+      const heroId = Number(ethers.utils.formatUnits(tokenId, 0))
+      if (price < bidPrice) {
+        const tx = await bid(wallet, tokenId, startingPrice, gasPrice)
+        bidResult(heroId, tx)
+      }
+      // Gen0
       if (heroId <= gen0 && price <= bidPriceGen0) {
-        const tx = await bid(wallet, tokenId, startingPrice)
-        if (tx === false) {
-          log(`'購入失敗 ID:${heroId}, ${price} Jewel`)
-          console.log('購入失敗 :', tokenId, price)
-          return
-        }
-        console.log('購入成功 : ', heroId, price)
-        log(`'購入成功 ID:${heroId}, ${price} Jewel`)
-        return
+        const tx = await bid(wallet, tokenId, startingPrice, gasPrice)
+        bidResult(heroId, tx)
       }
-      // ヒーローデータ取得
-      const hero = await getHero(tokenId)
-      if (!hero) return
-      // 最高購入価格の取得
-      const bidPrice = bidPrices[hero?.generation - 1] || undefined
-      if (!bidPrice) return
-      // low cost gen1~
-      if (price <= bidPrice) {
-        console.log(`gen: ${hero.generation} 購入価格閾値: ${bidPrice || 'なし'}`)
-        console.log('購入開始')
-        const tx = await bid(wallet, tokenId, startingPrice)
-        if (tx === false) {
-          console.log('購入失敗 :', tokenId, price)
-          log(`'購入失敗 ID:${heroId}, ${price} Jewel`)
-          return
-        }
-        console.log(`'購入成功 ID:${heroId}, ${price} Jewel`)
-        log(`'購入成功 ID:${heroId}, ${price} Jewel`)
-        return
-      }
+      console.log(`ヒーローID:${heroId} 販売価格:${price}`)
     } catch (e) {
       console.log(e)
       return
@@ -87,8 +68,25 @@ const main = async () => {
   }
 }
 
-const log = (text: string) => {
-  fs.appendFile(`${path.join(path.resolve(), '/bid.log')}`, `${text}\n`, () => {})
+const bidResult = async (heroId: number, tx = false) => {
+  const hero = await getHero(heroId)
+  if (tx === false) {
+    log(
+      `購入失敗 ID:${heroId} gen:${hero?.generation} rarity:${hero?.rarity} mainClass:${hero?.mainClass}`,
+    )
+    return
+  }
+  log(
+    `購入成功 ID:${heroId} gen:${hero?.generation} rarity:${hero?.rarity} mainClass:${hero?.mainClass}`,
+  )
+  return
+}
+
+const log = (text: string, consoleOnly = false) => {
+  if (!consoleOnly) {
+    fs.appendFile(`${path.join(path.resolve(), '/bid.log')}`, `${text}\n`, () => {})
+  }
+  console.log(text)
 }
 
 export default main

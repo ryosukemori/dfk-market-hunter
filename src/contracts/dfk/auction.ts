@@ -60,10 +60,9 @@ export const bid = async (
   signer: ethers.Signer,
   tokenId: number | ethers.BigNumber,
   bidAmount: number | ethers.BigNumber,
+  gasPrice: ethers.BigNumber,
 ) => {
   const callContract = new ethers.Contract(contractAddress, abi, signer)
-  const gasPrice = (await signer.getGasPrice()).mul(gasBoost)
-  console.log(ethers.utils.formatUnits(gasPrice, 'gwei'))
   try {
     const tx = await callContract.bid(tokenId, bidAmount, {
       gasPrice,
@@ -71,8 +70,8 @@ export const bid = async (
     })
     await tx.wait()
     return tx
-  } catch (e) {
-    console.error(e)
+  } catch (e: any) {
+    console.error(e.errorArgs)
     return false
   }
 }
