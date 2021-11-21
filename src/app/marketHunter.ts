@@ -39,40 +39,45 @@ const main = async () => {
   console.log('jewel ', ethers.utils.formatUnits(jewel.balance, jewel.decimals))
 
   eventAuctionCreated(async (_auctionId, _owner, tokenId, startingPrice) => {
-    const heroId = Number(ethers.utils.formatUnits(tokenId, 0))
-    const price = Number(ethers.utils.formatUnits(startingPrice, jewel.decimals))
-    console.log(`ヒーローID:${heroId} 販売価格:${price}`)
-    log(`ヒーローID:${heroId} 販売価格:${price}`)
-    // low cost gen0
-    if (heroId <= gen0 && price <= bidPriceGen0) {
-      const tx = await bid(wallet, tokenId, startingPrice)
-      if (tx === false) {
-        log(`'購入失敗 ID:${heroId}, ${price} Jewel`)
-        console.log('購入失敗 :', tokenId, price)
+    try {
+      const heroId = Number(ethers.utils.formatUnits(tokenId, 0))
+      const price = Number(ethers.utils.formatUnits(startingPrice, jewel.decimals))
+      console.log(`ヒーローID:${heroId} 販売価格:${price}`)
+      log(`ヒーローID:${heroId} 販売価格:${price}`)
+      // low cost gen0
+      if (heroId <= gen0 && price <= bidPriceGen0) {
+        const tx = await bid(wallet, tokenId, startingPrice)
+        if (tx === false) {
+          log(`'購入失敗 ID:${heroId}, ${price} Jewel`)
+          console.log('購入失敗 :', tokenId, price)
+          return
+        }
+        console.log('購入成功 : ', heroId, price)
+        log(`'購入成功 ID:${heroId}, ${price} Jewel`)
         return
       }
-      console.log('購入成功 : ', heroId, price)
-      log(`'購入成功 ID:${heroId}, ${price} Jewel`)
-      return
-    }
-    // ヒーローデータ取得
-    const hero = await getHero(tokenId)
-    if (!hero) return
-    // 最高購入価格の取得
-    const bidPrice = bidPrices[hero?.generation - 1] || undefined
-    if (!bidPrice) return
-    // low cost gen1~
-    if (price <= bidPrice) {
-      console.log(`gen: ${hero.generation} 購入価格閾値: ${bidPrice || 'なし'}`)
-      console.log('購入開始')
-      const tx = await bid(wallet, tokenId, startingPrice)
-      if (tx === false) {
-        console.log('購入失敗 :', tokenId, price)
-        log(`'購入失敗 ID:${heroId}, ${price} Jewel`)
+      // ヒーローデータ取得
+      const hero = await getHero(tokenId)
+      if (!hero) return
+      // 最高購入価格の取得
+      const bidPrice = bidPrices[hero?.generation - 1] || undefined
+      if (!bidPrice) return
+      // low cost gen1~
+      if (price <= bidPrice) {
+        console.log(`gen: ${hero.generation} 購入価格閾値: ${bidPrice || 'なし'}`)
+        console.log('購入開始')
+        const tx = await bid(wallet, tokenId, startingPrice)
+        if (tx === false) {
+          console.log('購入失敗 :', tokenId, price)
+          log(`'購入失敗 ID:${heroId}, ${price} Jewel`)
+          return
+        }
+        console.log(`'購入成功 ID:${heroId}, ${price} Jewel`)
+        log(`'購入成功 ID:${heroId}, ${price} Jewel`)
         return
       }
-      console.log(`'購入成功 ID:${heroId}, ${price} Jewel`)
-      log(`'購入成功 ID:${heroId}, ${price} Jewel`)
+    } catch (e) {
+      console.log(e)
       return
     }
   })
