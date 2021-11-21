@@ -69,7 +69,7 @@ export const bid = async (
       gasPrice,
       gasLimit,
     })
-    tx.wait()
+    await tx.wait()
     return tx
   } catch (e) {
     console.error(e)
