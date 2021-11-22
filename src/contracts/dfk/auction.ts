@@ -88,7 +88,7 @@ export const bid = async (
       }
 
       tryCount++
-      await new Promise((resolve) => setTimeout(resolve, 200))
+      await new Promise((resolve) => setTimeout(resolve, 500))
       continue
     }
   }
