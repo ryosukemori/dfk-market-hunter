@@ -80,9 +80,9 @@ const main = async () => {
   }
 }
 
-const bidResult = async (heroId: number, tx = false) => {
+const bidResult = async (heroId: number, result = false) => {
   const hero = await getHero(heroId)
-  if (tx === false) {
+  if (result !== true) {
     log(
       `購入失敗 ID:${heroId} gen:${hero?.generation} rarity:${hero?.rarity} mainClass:${hero?.mainClass}`,
     )

@@ -71,13 +71,15 @@ export const bid = async (
         gasPrice,
         gasLimit,
       })
-      //await tx.wait()
-      return tx
+      await tx.wait()
+      return true
     } catch (e: any) {
       if (tryCount > 20) {
         console.error(e.errorArgs)
         return false
       }
+      if (e.errorArgs[0] === 'private') return false
+
       tryCount++
       await new Promise((resolve) => setTimeout(resolve, 200))
       continue
