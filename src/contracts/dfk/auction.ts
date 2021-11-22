@@ -74,12 +74,12 @@ export const bid = async (
       //await tx.wait()
       return tx
     } catch (e: any) {
-      if (tryCount > 10) {
+      if (tryCount > 20) {
         console.error(e.errorArgs)
         return false
       }
       tryCount++
-      await new Promise((resolve) => setTimeout(resolve, 500))
+      await new Promise((resolve) => setTimeout(resolve, 200))
       continue
     }
   }
