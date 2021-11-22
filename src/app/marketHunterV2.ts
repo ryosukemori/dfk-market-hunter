@@ -63,12 +63,12 @@ const main = async () => {
               ethers.utils.parseUnits(auctionData.price.toString(), jewel.decimals),
               gasPrice,
             )
-            bidResult(auctionData.heroId, result)
+            bidResult(auctionData.heroId, result, auctionData.price)
           }
           // gen0
           if (auctionData.heroId <= gen0 && auctionData.price <= bidPriceGen0) {
             const result = await bid(wallet, auctionData.heroId, auctionData.price, gasPrice)
-            bidResult(auctionData.heroId, result)
+            bidResult(auctionData.heroId, result, auctionData.price)
           }
           console.log(`heroId: ${auctionData.heroId} price: ${auctionData.price}`)
         }
@@ -80,16 +80,16 @@ const main = async () => {
   }
 }
 
-const bidResult = async (heroId: number, result = false) => {
+const bidResult = async (heroId: number, result = false, price: number) => {
   const hero = await getHero(heroId)
   if (result !== true) {
     log(
-      `購入失敗 ID:${heroId} gen:${hero?.generation} rarity:${hero?.rarity} mainClass:${hero?.mainClass}`,
+      `購入失敗 Price:${price} ID:${heroId} gen:${hero?.generation} rarity:${hero?.rarity} mainClass:${hero?.mainClass}`,
     )
     return
   }
   log(
-    `購入成功 ID:${heroId} gen:${hero?.generation} rarity:${hero?.rarity} mainClass:${hero?.mainClass}`,
+    `購入成功 Price:${price} ID:${heroId} gen:${hero?.generation} rarity:${hero?.rarity} mainClass:${hero?.mainClass}`,
   )
   return
 }

@@ -67,18 +67,25 @@ export const bid = async (
   let tryCount = 0
   while (true) {
     try {
-      const tx = await callContract.bid(tokenId, bidAmount, {
+      const tx = await callContract.callStatic.bid(tokenId, bidAmount, {
         gasPrice,
         gasLimit,
       })
-      await tx.wait()
+      // await tx.wait()
       return true
     } catch (e: any) {
       if (tryCount > 20) {
         console.error(e.errorArgs)
         return false
       }
-      if (e.errorArgs && e.errorArgs[0] === 'private') return false
+      if (e.errorArgs && e.errorArgs[0] === 'private') {
+        console.log('private sale')
+        return false
+      }
+      if (e.errorArgs && e.errorArgs[0] === 'ERC20: transfer amount exceeds balance') {
+        console.log('low jewel balance')
+        return false
+      }
 
       tryCount++
       await new Promise((resolve) => setTimeout(resolve, 200))
