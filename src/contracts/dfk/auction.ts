@@ -1,7 +1,8 @@
 import { getProvider } from '../../wallet'
 import { ethers } from 'ethers'
 
-const contractAddress = '0x13a65b9f8039e2c032bc022171dc05b30c3f2892'
+export const contractAddress = '0x13a65B9F8039E2c032Bc022171Dc05B30c3f2892'
+export const contractAddressOne = 'one1zwn9h8uq883vqv4uqgshrhq9kvxr72yjjjz9la'
 const gasBoost = Number(process.env.GAS_BOOST) || 5
 const gasLimit = Number(process.env.GAS_LIMIT) || 500000
 
