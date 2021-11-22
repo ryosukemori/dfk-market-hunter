@@ -57,7 +57,7 @@ const main = async () => {
   const pendingTx = hmy_ws.blockchain.newPendingTransactions()
 
   pendingTx.onData(async (tx: any) => {
-    const txData = await await hmy_ws.blockchain.getTransactionReceipt({
+    const txData = await await hmy_ws.blockchain.getTransactionByHash({
       txnHash: tx.params.result,
       shardID: 0,
     })
