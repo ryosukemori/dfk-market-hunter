@@ -2,23 +2,12 @@ import fs from 'fs'
 import path from 'path'
 import { ethers } from 'ethers'
 import { getWallet } from '../wallet'
-import { getJewelInfo, getHeroInfo } from '../tokens/dfk'
-import {
-  eventAuctionCreated,
-  bid,
-  contractAddressOne as auctionAddress,
-  contractAddressOne,
-} from '../contracts/dfk/auction'
+import { getJewelInfo } from '../tokens/dfk'
+import axios from 'axios'
+import { bid, contractAddressOne as auctionAddress } from '../contracts/dfk/auction'
 import { getHero } from '../contracts/dfk/hero'
-import { Harmony } from '@harmony-js/core'
-import { ChainID, ChainType } from '@harmony-js/utils'
 
-const hmy_ws = new Harmony(process.env.RPC_WSS || 'wss://ws.s0.t.hmny.io', {
-  chainType: ChainType.Harmony,
-  chainId: ChainID.HmyMainnet,
-})
-
-const auction = '0x13a65b9f8039e2c032bc022171dc05b30c3f2892'
+const rpc = process.env.RPC || 'https://api.harmony.one'
 const gen0 = 2071
 const bidPriceGen0 = Number(process.env.bidPriceGen0) || 200
 const bidPrice = Number(process.env.bidPrice) || 15
@@ -54,34 +43,41 @@ const main = async () => {
     console.log('set gas:', ethers.utils.formatUnits(gasPrice, 'gwei'))
   }, 60000)
 
-  const pendingTx = hmy_ws.blockchain.newPendingTransactions()
-
-  pendingTx.onData(async (tx: any) => {
-    const txData = await await hmy_ws.blockchain.getTransactionByHash({
-      txnHash: tx.params.result,
-      shardID: 0,
-    })
-    console.log(txData)
-    if (txData && txData.to === contractAddressOne) {
-      console.log(formatAuctionCreatedHexData(txData.input, jewel.decimals))
+  while (true) {
+    try {
+      const res: any = await axios.post(rpc, {
+        jsonrpc: '2.0',
+        id: 1,
+        method: 'hmyv2_pendingTransactions',
+        params: [],
+      })
+      res.data.result.map(async (tx: any) => {
+        if (tx.to === auctionAddress && tx.input.indexOf('4ee42914') != -1) {
+          const auctionData = formatAuctionCreatedHexData(tx.input, jewel.decimals)
+          if (!auctionData) return
+          // low price
+          if (auctionData.price < bidPrice) {
+            const result = await bid(
+              wallet,
+              auctionData.heroId,
+              ethers.utils.parseUnits(auctionData.price.toString(), jewel.decimals),
+              gasPrice,
+            )
+            bidResult(auctionData.heroId, result)
+          }
+          // gen0
+          if (auctionData.heroId <= gen0 && auctionData.price <= bidPriceGen0) {
+            const result = await bid(wallet, auctionData.heroId, auctionData.price, gasPrice)
+            bidResult(auctionData.heroId, result)
+          }
+          log(`heroId: ${auctionData.heroId} price: ${auctionData.price}`)
+        }
+      })
+    } catch (e) {
+      console.error(e)
     }
-  })
-}
-
-const getTransaction = async (txHash: string) => {
-  let res = null
-  for (let i = 0; i < 100; i++) {
-    res = await hmy_ws.blockchain.getTransactionReceipt({
-      txnHash: txHash,
-      shardID: 0,
-    })
-    console.log(res)
-    if (res.result !== null) {
-      return res.result
-    }
-    await new Promise((resolve) => setTimeout(resolve, 100))
+    await new Promise((resolve) => setTimeout(resolve, 2000))
   }
-  return null
 }
 
 const bidResult = async (heroId: number, tx = false) => {
@@ -109,7 +105,8 @@ const formatAuctionCreatedHexData = (data: string, decimals: number) => {
     return {
       function: slice[0],
       heroId: parseInt(slice[1], 16),
-      price: ethers.utils.formatUnits(slice[2], decimals),
+      price: Number(ethers.utils.formatUnits(slice[2], decimals)),
+      rawPrice: slice[2],
     }
   }
   return undefined

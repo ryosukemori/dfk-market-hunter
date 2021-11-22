@@ -64,16 +64,24 @@ export const bid = async (
   gasPrice: ethers.BigNumber,
 ) => {
   const callContract = new ethers.Contract(contractAddress, abi, signer)
-  try {
-    const tx = await callContract.bid(tokenId, bidAmount, {
-      gasPrice,
-      gasLimit,
-    })
-    await tx.wait()
-    return tx
-  } catch (e: any) {
-    console.error(e.errorArgs)
-    return false
+  let tryCount = 0
+  while (true) {
+    try {
+      const tx = await callContract.bid(tokenId, bidAmount, {
+        gasPrice,
+        gasLimit,
+      })
+      //await tx.wait()
+      return tx
+    } catch (e: any) {
+      if (tryCount > 10) {
+        console.error(e.errorArgs)
+        return false
+      }
+      tryCount++
+      await new Promise((resolve) => setTimeout(resolve, 500))
+      continue
+    }
   }
 }
 
