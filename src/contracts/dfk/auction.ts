@@ -78,7 +78,7 @@ export const bid = async (
         console.error(e.errorArgs)
         return false
       }
-      if (e.errorArgs[0] === 'private') return false
+      if (e?.errorArgs[0] === 'private') return false
 
       tryCount++
       await new Promise((resolve) => setTimeout(resolve, 200))
