@@ -43,6 +43,8 @@ const main = async () => {
     console.log('set gas:', ethers.utils.formatUnits(gasPrice, 'gwei'))
   }, 60000)
 
+  let bidHeros: number[] = []
+
   while (true) {
     try {
       const res: any = await axios.post(rpc, {
@@ -54,9 +56,11 @@ const main = async () => {
       res.data.result.map(async (tx: any) => {
         if (tx.to === auctionAddress && tx.input.indexOf('4ee42914') != -1) {
           const auctionData = formatAuctionCreatedHexData(tx.input, jewel.decimals)
+          if (bidHeros.some((item) => auctionData?.heroId === item)) return
           if (!auctionData) return
           // low price
           if (auctionData.price < bidPrice) {
+            bidHeros = [...bidHeros, auctionData.heroId]
             const result = await bid(
               wallet,
               auctionData.heroId,
@@ -64,11 +68,14 @@ const main = async () => {
               gasPrice,
             )
             bidResult(auctionData.heroId, result, auctionData.price)
+            bidHeros = bidHeros.filter((item) => item !== auctionData.heroId)
           }
           // gen0
-          if (auctionData.heroId <= gen0 && auctionData.price <= bidPriceGen0) {
+          else if (auctionData.heroId <= gen0 && auctionData.price <= bidPriceGen0) {
+            bidHeros = [...bidHeros, auctionData.heroId]
             const result = await bid(wallet, auctionData.heroId, auctionData.price, gasPrice)
             bidResult(auctionData.heroId, result, auctionData.price)
+            bidHeros = bidHeros.filter((item) => item !== auctionData.heroId)
           }
           console.log(`heroId: ${auctionData.heroId} price: ${auctionData.price}`)
         }
