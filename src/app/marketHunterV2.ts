@@ -13,7 +13,7 @@ import { getHero } from '../contracts/dfk/hero'
 import { Harmony } from '@harmony-js/core'
 import { ChainID, ChainType } from '@harmony-js/utils'
 
-const hmy_ws = new Harmony(process.env.RPC_WSS || 'wss://ws.s0.t.hmny.io', {
+const hmy_ws = new Harmony(process.env.RPC || 'https://api.harmony.one', {
   chainType: ChainType.Harmony,
   chainId: ChainID.HmyMainnet,
 })
