@@ -71,7 +71,7 @@ export const bid = async (
         gasPrice,
         gasLimit,
       })
-      // await tx.wait()
+      await tx.wait()
       return true
     } catch (e: any) {
       if (tryCount > 20) {
