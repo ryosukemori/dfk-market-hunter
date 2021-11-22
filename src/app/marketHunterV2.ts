@@ -70,7 +70,7 @@ const main = async () => {
             const result = await bid(wallet, auctionData.heroId, auctionData.price, gasPrice)
             bidResult(auctionData.heroId, result)
           }
-          log(`heroId: ${auctionData.heroId} price: ${auctionData.price}`)
+          console.log(`heroId: ${auctionData.heroId} price: ${auctionData.price}`)
         }
       })
     } catch (e) {
