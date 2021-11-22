@@ -10,6 +10,13 @@ import {
   contractAddressOne,
 } from '../contracts/dfk/auction'
 import { getHero } from '../contracts/dfk/hero'
+import { Harmony } from '@harmony-js/core'
+import { ChainID, ChainType } from '@harmony-js/utils'
+
+const hmy_ws = new Harmony(process.env.RPC_WSS || 'wss://ws.s0.t.hmny.io', {
+  chainType: ChainType.Harmony,
+  chainId: ChainID.HmyMainnet,
+})
 
 const auction = '0x13a65b9f8039e2c032bc022171dc05b30c3f2892'
 const gen0 = 2071
@@ -47,13 +54,34 @@ const main = async () => {
     console.log('set gas:', ethers.utils.formatUnits(gasPrice, 'gwei'))
   }, 60000)
 
-  wallet.provider.on('pending', async (tx: any) => {
-    const txData = await await wallet.provider.getTransaction(tx)
+  const pendingTx = hmy_ws.blockchain.newPendingTransactions()
+
+  pendingTx.onData(async (tx: any) => {
+    const txData = await await hmy_ws.blockchain.getTransactionReceipt({
+      txnHash: tx.params.result,
+      shardID: 0,
+    })
     console.log(txData)
     if (txData && txData.to === contractAddressOne) {
-      console.log(formatAuctionCreatedHexData(txData.data, jewel.decimals))
+      console.log(formatAuctionCreatedHexData(txData.input, jewel.decimals))
     }
   })
+}
+
+const getTransaction = async (txHash: string) => {
+  let res = null
+  for (let i = 0; i < 100; i++) {
+    res = await hmy_ws.blockchain.getTransactionReceipt({
+      txnHash: txHash,
+      shardID: 0,
+    })
+    console.log(res)
+    if (res.result !== null) {
+      return res.result
+    }
+    await new Promise((resolve) => setTimeout(resolve, 100))
+  }
+  return null
 }
 
 const bidResult = async (heroId: number, tx = false) => {
