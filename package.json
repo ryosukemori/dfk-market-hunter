@@ -6,9 +6,11 @@
   "scripts": {
     "build": "tsc",
     "dev": "tsc --watch",
-    "start": "ts-node ./src/main.ts"
+    "start": "NODE_OPTIONS='--max-old-space-size=1024' ts-node ./src/main.ts"
   },
   "dependencies": {
+    "@harmony-js/core": "^0.1.57",
+    "@harmony-js/utils": "^0.1.56",
     "dotenv": "^10.0.0",
     "ethers": "^5.5.1"
   },
