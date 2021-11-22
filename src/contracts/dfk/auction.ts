@@ -67,7 +67,7 @@ export const bid = async (
   let tryCount = 0
   while (true) {
     try {
-      const tx = await callContract.callStatic.bid(tokenId, bidAmount, {
+      const tx = await callContract.bid(tokenId, bidAmount, {
         gasPrice,
         gasLimit,
       })
