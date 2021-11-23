@@ -74,11 +74,12 @@ export const bid = async (
 ) => {
   const callContract = new ethers.Contract(contractAddress, abi, signer)
   let tryCount = 0
+  console.log('bid chance! heroid:', tokenId)
   while (true) {
     try {
       // bid pause
       if (endBids.find((item) => item === tokenId)) {
-        console.log('auction opend')
+        console.log('auction opend:', tokenId)
         tryCount = 11
       }
 
@@ -103,7 +104,7 @@ export const bid = async (
       }
 
       tryCount++
-      await new Promise((resolve) => setTimeout(resolve, 500))
+      await new Promise((resolve) => setTimeout(resolve, 1000))
       console.log('retry', tryCount)
       continue
     } finally {

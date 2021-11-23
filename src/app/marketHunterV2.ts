@@ -50,10 +50,11 @@ const main = async () => {
 
   let bidHeros: number[] = []
 
-  eventAuctionCreated((_, __, heroId, price) => {
+  eventAuctionCreated(async (_, __, heroId, price) => {
     const numberHeroId = Number(ethers.utils.formatUnits(heroId, 0))
     const numberPrice = Number(ethers.utils.formatUnits(price, jewel.decimals))
     if (numberPrice < bidPrice || numberHeroId <= gen0) {
+      console.log('current block:', await wallet.provider.getBlockNumber(), 'hero:', numberHeroId)
       setEndBid(numberHeroId)
     }
   })
@@ -74,6 +75,11 @@ const main = async () => {
           // low price
           if (auctionData.price < bidPrice) {
             bidHeros = [...bidHeros, auctionData.heroId]
+            wallet.provider
+              .getBlockNumber()
+              .then((res) =>
+                console.log('pending current block:', res, 'hero:', auctionData.heroId),
+              )
             const result = await bid(
               wallet,
               auctionData.heroId,
@@ -86,6 +92,11 @@ const main = async () => {
           // gen0
           else if (auctionData.heroId <= gen0 && auctionData.price <= bidPriceGen0) {
             bidHeros = [...bidHeros, auctionData.heroId]
+            wallet.provider
+              .getBlockNumber()
+              .then((res) =>
+                console.log('pending current block:', res, 'hero:', auctionData.heroId),
+              )
             const result = await bid(wallet, auctionData.heroId, auctionData.price, gasPrice)
             bidResult(auctionData.heroId, result, auctionData.price)
             bidHeros = bidHeros.filter((item) => item !== auctionData.heroId)
