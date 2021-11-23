@@ -97,7 +97,7 @@ const main = async () => {
               .then((res) =>
                 console.log('pending current block:', res, 'hero:', auctionData.heroId),
               )
-            const result = await bid(wallet, auctionData.heroId, auctionData.price, gasPrice)
+            const result = await bid(wallet, auctionData.heroId, auctionData.price, gasPrice.mul(3))
             bidResult(auctionData.heroId, result, auctionData.price)
             bidHeros = bidHeros.filter((item) => item !== auctionData.heroId)
           }
