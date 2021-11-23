@@ -4,7 +4,12 @@ import { ethers } from 'ethers'
 import { getWallet } from '../wallet'
 import { getJewelInfo } from '../tokens/dfk'
 import axios from 'axios'
-import { bid, contractAddressOne as auctionAddress } from '../contracts/dfk/auction'
+import {
+  bid,
+  contractAddressOne as auctionAddress,
+  eventAuctionCreated,
+  setEndBid,
+} from '../contracts/dfk/auction'
 import { getHero } from '../contracts/dfk/hero'
 
 const rpc = process.env.RPC || 'https://api.harmony.one'
@@ -45,6 +50,14 @@ const main = async () => {
 
   let bidHeros: number[] = []
 
+  eventAuctionCreated((_, __, heroId, price) => {
+    const numberHeroId = Number(ethers.utils.formatUnits(heroId, 0))
+    const numberPrice = Number(ethers.utils.formatUnits(price, jewel.decimals))
+    if (numberPrice < bidPrice || numberHeroId <= gen0) {
+      setEndBid(numberHeroId)
+    }
+  })
+
   while (true) {
     try {
       const res: any = await axios.post(rpc, {
@@ -56,6 +69,7 @@ const main = async () => {
       res.data.result.map(async (tx: any) => {
         if (tx.to === auctionAddress && tx.input.indexOf('4ee42914') != -1) {
           const auctionData = formatAuctionCreatedHexData(tx.input, jewel.decimals)
+          console.log(auctionData)
           if (bidHeros.some((item) => auctionData?.heroId === item)) return
           if (!auctionData) return
           // low price

@@ -57,9 +57,18 @@ const abi = [
 
 const contract = new ethers.Contract(contractAddress, abi, getProvider())
 
+let endBids: number[] = []
+
+export const setEndBid = async (heroId: number) => {
+  endBids = [...endBids, heroId]
+  console.log(endBids)
+  await new Promise((resolve) => setTimeout(resolve, 30000))
+  endBids = endBids.filter((item) => item !== heroId)
+}
+
 export const bid = async (
   signer: ethers.Signer,
-  tokenId: number | ethers.BigNumber,
+  tokenId: number,
   bidAmount: number | ethers.BigNumber,
   gasPrice: ethers.BigNumber,
 ) => {
@@ -67,6 +76,12 @@ export const bid = async (
   let tryCount = 0
   while (true) {
     try {
+      // bid pause
+      if (endBids.find((item) => item === tokenId)) {
+        console.log('auction opend')
+        tryCount = 11
+      }
+
       const tx = await callContract.bid(tokenId, bidAmount, {
         gasPrice,
         gasLimit,
@@ -88,8 +103,11 @@ export const bid = async (
       }
 
       tryCount++
-      await new Promise((resolve) => setTimeout(resolve, 800))
+      await new Promise((resolve) => setTimeout(resolve, 500))
+      console.log('retry', tryCount)
       continue
+    } finally {
+      endBids = endBids.filter((item) => item !== tokenId)
     }
   }
 }
