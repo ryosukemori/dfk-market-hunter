@@ -74,8 +74,8 @@ export const bid = async (
       await tx.wait()
       return true
     } catch (e: any) {
-      if (tryCount > 20) {
-        console.error(e.errorArgs)
+      if (tryCount > 10) {
+        console.error(e)
         return false
       }
       if (e.errorArgs && e.errorArgs[0] === 'private') {
@@ -88,7 +88,7 @@ export const bid = async (
       }
 
       tryCount++
-      await new Promise((resolve) => setTimeout(resolve, 500))
+      await new Promise((resolve) => setTimeout(resolve, 800))
       continue
     }
   }
