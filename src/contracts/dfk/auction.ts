@@ -107,8 +107,6 @@ export const bid = async (
       await new Promise((resolve) => setTimeout(resolve, 1000))
       console.log('retry', tryCount)
       continue
-    } finally {
-      endBids = endBids.filter((item) => item !== tokenId)
     }
   }
 }
