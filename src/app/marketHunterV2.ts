@@ -69,7 +69,6 @@ const main = async () => {
       res.data.result.map(async (tx: any) => {
         if (tx.to === auctionAddress && tx.input.indexOf('4ee42914') != -1) {
           const auctionData = formatAuctionCreatedHexData(tx.input, jewel.decimals)
-          console.log(auctionData)
           if (bidHeros.some((item) => auctionData?.heroId === item)) return
           if (!auctionData) return
           // low price
