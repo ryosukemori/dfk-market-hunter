@@ -1,5 +1,6 @@
 import { getProvider } from '../../wallet'
 import { ethers } from 'ethers'
+import * as Performance from '../../util/performance'
 
 export const contractAddress = '0x13a65B9F8039E2c032Bc022171Dc05B30c3f2892'
 export const contractAddressOne = 'one1zwn9h8uq883vqv4uqgshrhq9kvxr72yjjjz9la'
@@ -82,7 +83,7 @@ export const bid = async (
         console.log('auction opend:', tokenId)
         tryCount = 11
       }
-
+      console.log('send transaction')
       const tx = await callContract.bid(tokenId, bidAmount, {
         gasPrice,
         gasLimit,
@@ -104,7 +105,7 @@ export const bid = async (
       }
 
       tryCount++
-      await new Promise((resolve) => setTimeout(resolve, 1000))
+      await new Promise((resolve) => setTimeout(resolve, 100))
       console.log('retry', tryCount)
       continue
     }

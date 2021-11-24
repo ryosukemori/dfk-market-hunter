@@ -1,7 +1,7 @@
 import fs from 'fs'
 import path from 'path'
 import { ethers } from 'ethers'
-import { getWallet } from '../wallet'
+import { getWallet, getProvider } from '../wallet'
 import { getJewelInfo } from '../tokens/dfk'
 import axios from 'axios'
 import {
@@ -11,6 +11,7 @@ import {
   setEndBid,
 } from '../contracts/dfk/auction'
 import { getHero } from '../contracts/dfk/hero'
+import * as Performance from '../util/performance'
 
 const rpc = process.env.RPC || 'https://api.harmony.one'
 const gen0 = 2071
@@ -22,6 +23,7 @@ let gasPrice = ethers.BigNumber.from(0)
 
 const main = async () => {
   const wallet = getWallet()
+  const provider = getProvider()
   const walletAddress = await wallet.getAddress()
 
   const [balance, jewel] = await Promise.all([
@@ -61,13 +63,9 @@ const main = async () => {
 
   while (true) {
     try {
-      const res: any = await axios.post(rpc, {
-        jsonrpc: '2.0',
-        id: 1,
-        method: 'hmyv2_pendingTransactions',
-        params: [],
-      })
-      res.data.result.map(async (tx: any) => {
+      const res = await provider.send('hmyv2_pendingTransactions', [])
+
+      res.map(async (tx: any) => {
         if (tx.to === auctionAddress && tx.input.indexOf('4ee42914') != -1) {
           const auctionData = formatAuctionCreatedHexData(tx.input, jewel.decimals)
           if (bidHeros.some((item) => auctionData?.heroId === item)) return
@@ -107,7 +105,7 @@ const main = async () => {
     } catch (e) {
       console.error(e)
     }
-    await new Promise((resolve) => setTimeout(resolve, 2000))
+    await new Promise((resolve) => setTimeout(resolve, 200))
   }
 }
 
